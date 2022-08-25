@@ -1,0 +1,216 @@
+{% extends 'admin/base.html' %}
+
+{% block body %}
+{% if current_user.is_authenticated and current_user.username == 'admin' %}
+  <h1 class="text-center" style="padding: 20px 0">Thống Kê Xếp Loại Học Sinh Chi Tiết</h1>
+
+  <div class="row">
+    <div class="col-md-7">
+
+      <form action="/admin/">
+        <div class="form-group">
+          <span>Lớp học: </span>
+          <select id="valueLopHoc" name="lop" class="form-control">
+            <option value="">{% if lop %} {{ lop }} {% else %} Tất cả lớp học {% endif %}</option>
+            {% for c in classes %}
+            <option value="{{ c[1] }}">{{c[0]}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: none" class="form-group form">
+          <span>Năm học: </span>
+          <select id="valueNamHoc" name="nh" class="form-control">
+            <option value="">{% if nam_hoc %} {{ nam_hoc }} {% else %} Tất cả năm học {% endif %}</option>
+            {% for s in semesters %}
+            <option value="{{ s[1] }}">Năm học {{s[0]}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: none" class="form-group form">
+          <span>Học kỳ: </span>
+          <select id="valueHocKy" name="hk" class="form-control">
+            <option value="">{% if hoc_ky %} {{ hoc_ky }} {% else %} Tất cả học kỳ {% endif %}</option>
+            {% for t in terms %}
+            <option value="{{ t[1] }}">Học kỳ {{t[0]}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: none" class="form-group form">
+          <span>Môn học: </span>
+          <select id="valueMonHoc" name="mh" class="form-control">
+            <option value="">{% if mon_hoc %} {{ mon_hoc }} {% else %} Tất cả môn học {% endif %}</option>
+            {% for s in subjects %}
+            <option value="{{ s[1] }}">{{s[0]}}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <input type="submit" value="Thống kê" class="btn btn-primary" style="margin: 10px 0">
+      </form>
+      {% if result3 %}
+      <table class="table table-bordered">
+        <tr class="thead-dark">
+          <th class="text-center" colspan="5"><h3>THỐNG KÊ XẾP LOẠI HỌC SINH</h3></th>
+        </tr>
+        <tr class="table-info">
+          <th colspan="2">Môn: {% if subject_name %} {{ subject_name }} {% else %} Tất cả môn học {% endif %}</th>
+          <th colspan="3">Học kỳ: {% if term_name %} {{ term_name }} {% else %} Tất cả học kỳ {% endif %}</th>
+        </tr>
+        <tr class="table-info">
+          <th colspan="5">Năm học: {% if semester_name %} {{ semester_name }} {% else %} Tất cả năm học {% endif %}</th>
+        </tr>
+        <tr class="thead-dark">
+          <th>Tên lớp học</th>
+          <th>Tên học sinh</th>
+          <th>Sĩ số</th>
+          <th>Điểm trung bình</th>
+          <th>Xếp loại</th>
+        </tr>
+
+        {% for r3 in result3 %}
+        <tr class="table-info">
+          <td>{{ r3[0] }}</td>
+          <td>{{ r3[1] }}</td>
+          <th>{{ result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=r3[3])[0][1] }}</th>
+          <td>{{ '{:,.1f}'.format(r3[2]) }}</td>
+          <td>
+            {% if r3[2] >= 8.0 %}
+            Giỏi
+            {% elif r3[2] >= 6.5 %}
+            Khá
+            {% elif r3[2] >= 5.0 %}
+            Trung bình
+            {% else %}
+            Yếu
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+
+      </table>
+      {% else %}
+      <h5 class="text-danger text-center">Không có thông tin</h5>
+      {% endif %}
+    </div>
+    <div class="col-md-5">
+      {% if lop %}
+      <canvas id="myChart" style="max-width: 450px; max-height: 450px"></canvas>
+      {% else %}
+      <h5 style="margin-top: 30px" class="text-center"><em>Vui lòng chọn lớp học để xem biểu đồ thống kê!</em></h5>
+      {% endif %}
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = [], data = [], backgroundColor = [], borderColor = []
+  let r, g, countGioi, countYeu, countKha, countTrungBinh
+  countGioi=0, countYeu=0, countKha = 0, countTrungBinh = 0
+
+  let valueNamHoc, valueHocKy, valueMonHoc, valueLopHoc
+
+  valueNamHoc = document.querySelector('#valueNamHoc')
+  valueHocKy = document.querySelector('#valueHocKy')
+  valueMonHoc = document.querySelector('#valueMonHoc')
+  valueLopHoc = document.querySelector('#valueLopHoc')
+  btnSubmit = document.querySelector('#btnSubmit')
+  forms = document.querySelectorAll('.form')
+
+  valueLopHoc.onchange = function() {
+    if (this.value != '') {
+      forms.forEach(function(form) {
+        form.style.display = 'block'
+      })
+    } else {
+      forms.forEach(function(form) {
+        form.style.display = 'none'
+      })
+    }
+  }
+
+   {% if lop %}
+   {% for r in range(result3|length) %}
+     {% if result3[r][2] >= 8.0  %}
+       countGioi++
+       if (countGioi == 1) {
+         labels.push('% Giỏi')
+         data.push({{ '{:,.1f}'.format(( result4/result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=result3[0][3])[0][1] )*100) }})
+       }
+     {% elif result3[r][2] >= 6.5 %}
+       countKha++
+       if (countKha == 1) {
+         labels.push('% Khá')
+         data.push({{ '{:,.1f}'.format((result5/result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=result3[0][3])[0][1])*100) }})
+       }
+     {% elif result3[r][2] >= 5.0 %}
+       countTrungBinh++
+       if (countTrungBinh == 1) {
+         labels.push('% Trung bình')
+         data.push({{ '{:,.1f}'.format((result6/result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=result3[0][3])[0][1])*100) }})
+       }
+     {% else %}
+       countYeu++
+       if (countYeu == 1) {
+         labels.push('% Yếu')
+         data.push({{ '{:,.1f}'.format(((result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=result3[0][3])[0][1]-result4-result5-result6)
+         /result7(ma_nam_hoc=nam_hoc, ma_hoc_ky=hoc_ky, ma_lop=result3[0][3])[0][1])*100) }})
+       }
+     {% endif %}
+
+     r = parseInt(Math.random()*255)
+     g = parseInt(Math.random()*255)
+
+     backgroundColor.push(`rgba(${r}, ${g}, 0.4)`)
+     borderColor.push(`rgba(${r}, ${g}, 1)`)
+   {% endfor %}
+   {% endif %}
+
+  window.onload = function() {
+    const ctx = document.querySelector('#myChart').getContext('2d')
+
+    const myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Thống kế số lượng sản phẩm theo danh mục',
+                data: data,
+                backgroundColor: backgroundColor,
+                borderColor: borderColor,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+  }
+</script>
+
+{% else %}
+  <div style="background-color: #ADD8E6; height: 100vh; padding: 20px 250px;">
+    <h3 class="text-center text-danger">Người Quản Trị Đăng Nhập</h3>
+    <p class="noti alert alert-danger" style="display: none"></p>
+
+    <form method="post" action="{{ url_for('admin_login') }}">
+      <div class="form-group">
+        <label for="username">Tên đăng nhập: </label>
+        <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập ..." id="username">
+      </div>
+      <div class="form-group">
+        <label for="pwd">Mật khẩu: </label>
+        <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu ..." id="pwd">
+      </div>
+      <button type="submit" id="btnLogin" class="btn btn-primary" style="display: none">Đăng nhập</button>
+      <input type="button" class="btn btn-success" onclick="handleAdminLogin()" value="Đăng nhập">
+
+    </form>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/student.js') }}"></script>
+{% endif %}
+{% endblock %}

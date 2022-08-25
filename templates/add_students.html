@@ -1,0 +1,113 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+    Practice 2
+{% endblock %}
+
+{% block header %}
+  <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <!-- Brand -->
+    {% if current_user.is_authenticated %}
+    <a class="navbar-brand" href="{{ url_for('staff_login') }}">
+      <img class="rounded-circle" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" style="width: 30px">
+      Trang Chủ
+    </a>
+    {% else %}
+    <a class="navbar-brand" href="/">
+      <img class="rounded-circle" src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" style="width: 30px">
+      Trang Chủ
+    </a>
+    {% endif %}
+
+    <!-- Toggler/collapsibe Button -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+      <ul class="navbar-nav">
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('render_add_student_page') }}">Tiếp nhận học sinh</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('render_update_student_class_page') }}">Điều chỉnh lớp học</a>
+        </li>
+        <li class="nav-item" style="display: flex; align-items: center; margin: 0 2px 0 10px;">
+          <img class="rounded-circle" src="{{ url_for('static', filename='images/logo_user.png') }}" alt="" style="width: 26px">
+          <a class="nav-link" href="#">{{current_user.username}}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('logout') }}">Đăng xuất</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+{% endblock %}
+
+{% block container %}
+  <h1 class="text-center heading">Trang Tiếp Nhận Học Sinh</h1>
+
+  <h5 class="noti alert alert-success" style="opacity: 0"></h5>
+
+  <table class="table">
+    <tr class="thead-dark">
+      <th colspan="4"><h5 class="text-center">HỒ SƠ HỌC SINH</h5></th>
+    </tr>
+    <tr class="table-primary">
+      <td colspan="2">
+        <div class="form-group">
+          <label for="name">Họ tên:</label>
+          <input type="text" class="form-control" name="name" placeholder="Nhập họ tên học sinh..." id="name" onblur="hireNoti()">
+        </div>
+      </td>
+      <td colspan="2">
+        <div class="form-group">
+          <label>Giới tính:</label>
+
+          <div class="form-check">
+            <input type="radio" class="form-check-input" id="radio1" name="radioSex" value="0" checked>
+            <label class="form-check-label" for="radio1">Nữ</label>
+          </div>
+          <div class="form-check">
+            <input type="radio" class="form-check-input" id="radio2" name="radioSex" value="1">
+            <label class="form-check-label" for="radio2">Nam</label>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="table-success">
+      <td colspan="2">
+        <div class="form-group">
+      <label for="birthday">Ngày sinh:</label>
+      <input type="date" class="form-control" onblur="checkAge()" name="birthday" id="birthday">
+    </div>
+      </td>
+      <td colspan="2">
+        <div class="form-group">
+      <label for="address">Địa chỉ:</label>
+      <input type="text" class="form-control" name="address" placeholder="Nhập địa chỉ..." id="address">
+    </div>
+      </td>
+    </tr>
+    <tr class="table-primary">
+      <td colspan="2">
+        <div class="form-group">
+      <label for="phone">Số điện thoại:</label>
+      <input type="text" class="form-control" name="phone" placeholder="Nhập số điện thoại..." id="phone">
+    </div>
+      </td>
+      <td colspan="2">
+        <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" name="email" placeholder="Nhập email..." id="email">
+    </div>
+      </td>
+    </tr>
+  </table>
+
+  <input type="button" onclick="addStudent()" class="btn btn-success" value="Lưu">
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+    Practice 2
+{% endblock %}
+
+{% block container %}
+
+    <div class="slider_img" style="background-image: url({{ url_for('static', filename='images/school.jpg') }});">
+        <span id="slider_welcome">
+            <em>Vì lợi ích mười năm trồng cây, Vì lợi ích trăm năm trồng người</em>
+        </span>
+    </div>
+
+    <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Đăng nhập</h4>
+          <button type="button" class="close_modal_btn" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+            <span id="welcome">Chào mừng bạn đến với website!</span>
+            <a href="{{ url_for('staff_login') }}" id="teacher_login_btn">Nhân viên đăng nhập</a>
+            <a href="{{ url_for('teacher_login') }}" id="staff_login_btn">Giáo viên đăng nhập</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+      const myModal = document.querySelector('#myModal')
+      const loginHome = document.querySelector('#login_home')
+      const closeBtn = document.querySelector('.close_modal_btn')
+
+      loginHome.onclick = function(e) {
+        e.preventDefault()
+        myModal.classList.add('active')
+      }
+      closeBtn.onclick = function() {
+          myModal.classList.remove('active')
+      }
+  </script>
+
+{% endblock %}
